@@ -5,7 +5,7 @@ import android.util.Log
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-
+import android.graphics.drawable.GradientDrawable
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,15 +73,31 @@ class MainActivity : AppCompatActivity() {
             tarjeta.textSize = 18f
             tarjeta.setPadding(24, 24, 24, 24)
 
+            // Diseño de la tarjeta
+            val fondo = GradientDrawable()
+
+            fondo.cornerRadius = 24f
+
             if (tipo == "Factura") {
-                tarjeta.setBackgroundColor(
+                fondo.setColor(
                     android.graphics.Color.parseColor("#FFCDD2")
                 )
             } else if (tipo == "Boleta") {
-                tarjeta.setBackgroundColor(
+                fondo.setColor(
                     android.graphics.Color.parseColor("#C8E6C9")
                 )
             }
+
+            tarjeta.background = fondo
+
+            val parametros = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+
+            parametros.setMargins(0, 0, 0, 24)
+
+            tarjeta.layoutParams = parametros
 
             contenedorVentas.addView(tarjeta)
 
