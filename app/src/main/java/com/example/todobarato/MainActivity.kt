@@ -2,6 +2,8 @@ package com.example.todobarato
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
@@ -10,6 +12,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
+
+        val contenedorVentas = findViewById<LinearLayout>(R.id.contenedorVentas)
 
         val dbHelper = DatabaseHelper(this)
         val db = dbHelper.readableDatabase
@@ -23,23 +27,55 @@ class MainActivity : AppCompatActivity() {
 
         while (cursor.moveToNext()) {
 
-            val codigo =
-                cursor.getString(cursor.getColumnIndexOrThrow("codigo"))
+            val codigo = cursor.getString(
+                cursor.getColumnIndexOrThrow("codigo")
+            )
 
-            val nombre =
-                cursor.getString(cursor.getColumnIndexOrThrow("nombre"))
+            val nombre = cursor.getString(
+                cursor.getColumnIndexOrThrow("nombre")
+            )
 
-            val precio =
-                cursor.getDouble(cursor.getColumnIndexOrThrow("precio"))
+            val precio = cursor.getDouble(
+                cursor.getColumnIndexOrThrow("precio")
+            )
 
-            val cantidad =
-                cursor.getInt(cursor.getColumnIndexOrThrow("cantidad"))
+            val cantidad = cursor.getInt(
+                cursor.getColumnIndexOrThrow("cantidad")
+            )
 
-            val tipo =
-                cursor.getString(cursor.getColumnIndexOrThrow("tipo"))
+            val tipo = cursor.getString(
+                cursor.getColumnIndexOrThrow("tipo")
+            )
 
-            val fechaVenta =
-                cursor.getString(cursor.getColumnIndexOrThrow("fecha_venta"))
+            val fechaVenta = cursor.getString(
+                cursor.getColumnIndexOrThrow("fecha_venta")
+            )
+
+            val tarjeta = TextView(this)
+
+            tarjeta.text = """
+                Código: $codigo
+                Nombre: $nombre
+                Precio: S/$precio
+                Cantidad: $cantidad
+                Tipo: $tipo
+                Fecha: $fechaVenta
+            """.trimIndent()
+
+            tarjeta.textSize = 18f
+            tarjeta.setPadding(24, 24, 24, 24)
+
+            if (tipo == "Factura") {
+                tarjeta.setBackgroundColor(
+                    android.graphics.Color.parseColor("#FFCDD2")
+                )
+            } else if (tipo == "Boleta") {
+                tarjeta.setBackgroundColor(
+                    android.graphics.Color.parseColor("#C8E6C9")
+                )
+            }
+
+            contenedorVentas.addView(tarjeta)
 
             Log.d(
                 "TODO_BARATO",
