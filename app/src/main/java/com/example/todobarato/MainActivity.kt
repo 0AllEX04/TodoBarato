@@ -15,6 +15,14 @@ class MainActivity : AppCompatActivity() {
 
         val contenedorVentas = findViewById<LinearLayout>(R.id.contenedorVentas)
 
+        // ==================== ♡ANIMACIÓN♡ ====================//
+        contenedorVentas.alpha = 0f
+
+        contenedorVentas.animate()
+            .alpha(1f)
+            .setDuration(5000)
+            .start()
+
         val dbHelper = DatabaseHelper(this)
         val db = dbHelper.readableDatabase
 
