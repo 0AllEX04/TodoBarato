@@ -6,6 +6,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import android.graphics.drawable.GradientDrawable
+
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -14,14 +15,20 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val contenedorVentas = findViewById<LinearLayout>(R.id.contenedorVentas)
+        val txtResumen = findViewById<TextView>(R.id.txtResumen)
+        val txtTipos = findViewById<TextView>(R.id.txtTipos)
+        val txtTotalDinero = findViewById<TextView>(R.id.txtTotalDinero)
 
         // ==================== ♡ANIMACIÓN♡ ====================//
         contenedorVentas.alpha = 0f
+        contenedorVentas.translationY = 300f
 
         contenedorVentas.animate()
             .alpha(1f)
+            .translationY(0f)
             .setDuration(5000)
             .start()
+        // ==================== ♡ANIMACIÓN♡ ====================//
 
         val dbHelper = DatabaseHelper(this)
         val db = dbHelper.readableDatabase
@@ -32,6 +39,10 @@ class MainActivity : AppCompatActivity() {
         )
 
         val cursor = db.rawQuery("SELECT * FROM ventas", null)
+        txtResumen.text = "Total de ventas: ${cursor.count}"
+        var totalFacturas = 0
+        var totalBoletas = 0
+        var totalVendido = 0.0
 
         while (cursor.moveToNext()) {
 
@@ -50,10 +61,17 @@ class MainActivity : AppCompatActivity() {
             val cantidad = cursor.getInt(
                 cursor.getColumnIndexOrThrow("cantidad")
             )
+            totalVendido += precio * cantidad
 
             val tipo = cursor.getString(
                 cursor.getColumnIndexOrThrow("tipo")
             )
+
+            if (tipo == "Factura") {
+                totalFacturas++
+            } else if (tipo == "Boleta") {
+                totalBoletas++
+            }
 
             val fechaVenta = cursor.getString(
                 cursor.getColumnIndexOrThrow("fecha_venta")
@@ -62,15 +80,16 @@ class MainActivity : AppCompatActivity() {
             val tarjeta = TextView(this)
 
             tarjeta.text = """
-                Código: $codigo
-                Nombre: $nombre
-                Precio: S/$precio
-                Cantidad: $cantidad
-                Tipo: $tipo
-                Fecha: $fechaVenta
+            $nombre
+            Código: $codigo
+            Precio: S/ $precio
+            Cantidad: $cantidad
+            [$tipo]
+            Fecha de venta: $fechaVenta
             """.trimIndent()
 
-            tarjeta.textSize = 18f
+            tarjeta.textSize = 17f
+            tarjeta.setTextColor(android.graphics.Color.parseColor("#212121"))
             tarjeta.setPadding(24, 24, 24, 24)
 
             // Diseño de la tarjeta
@@ -106,6 +125,9 @@ class MainActivity : AppCompatActivity() {
                 "$codigo | $nombre | S/$precio | Cantidad: $cantidad | $tipo | $fechaVenta"
             )
         }
+        txtTipos.text = "Facturas: $totalFacturas | Boletas: $totalBoletas"
+
+        txtTotalDinero.text = "Total vendido: S/ %.2f".format(totalVendido)
 
         cursor.close()
     }
