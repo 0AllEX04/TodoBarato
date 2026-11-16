@@ -138,9 +138,32 @@ En la comprobación del 16 de noviembre de 2026:
 
 Estas comprobaciones fueron de lectura. No verifican creación, actualización
 ni eliminación de marcas. El Dockerfile actual utiliza `-x test`, por lo que
-la construcción no ejecuta las pruebas automatizadas. También queda pendiente
-revisar las fechas: el registro inicial tiene `03:31:46` en el SQL y la API
-devolvió `08:31:46`, un desfase de cinco horas.
+la construcción no ejecuta las pruebas automatizadas.
+
+## Marcas inexistentes y fechas
+
+Las operaciones de actualización y eliminación devuelven HTTP 404 cuando el
+servicio indica que la marca no existe. La respuesta incluye `status`, `error`,
+`message`, `path` y `timestamp`. Un nombre vacío continúa devolviendo HTTP 400.
+
+Al iniciar desde `TodobaratoApplication.main`, Java establece `America/Lima`
+como zona predeterminada, también en Docker e IntelliJ. Las fechas `DATETIME`
+se representan como horas locales de Lima mediante `LocalDateTime`, sin sufijo
+de zona en el JSON. No se modificaron fechas almacenadas. La lectura comprobada
+de Toyota devuelve `2026-10-27T03:31:46`, igual que MySQL; antes devolvía cinco
+horas adicionales. Esta comprobación no cubre todavía altas o actualizaciones
+reales de fechas.
+
+Para ejecutar las pruebas HTTP sin conectarlas a MySQL:
+
+```sh
+docker build --target builder -t todobarato-verificacion -f DockerFile .
+docker run --rm todobarato-verificacion ./gradlew test --tests com.todobarato.pcl.todobarato.controller.MarcaControllerTest --no-daemon
+```
+
+Resultado comprobado: tres pruebas aprobadas, sin fallos. Utilizan un servicio
+simulado y comprueban el 404 de actualización, el 404 de eliminación sin invocar
+el borrado y el 400 por nombre vacío. No ejecutan la prueba `contextLoads`.
 
 Los cambios futuros de esquema deberán aplicarse explícitamente; no se realizan
 automáticamente sobre una base que ya contiene datos.
