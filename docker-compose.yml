@@ -5,30 +5,40 @@ services:
     restart: always
     environment:
       MYSQL_DATABASE: todobarato
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Define MYSQL_ROOT_PASSWORD en .env}
+      MYSQL_USER: ${DB_USER:-todobarato_app}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en .env}
     ports:
-      - "3306:3306"
+      - "127.0.0.1:3306:3306"
     volumes:
       - mysql_todobarato_data:/var/lib/mysql
+      - ./src/main/java/com/todobarato/pcl/todobarato/sql/todobarato.sql:/docker-entrypoint-initdb.d/01-todobarato.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_PASSWORD\" mysql --protocol=TCP -h 127.0.0.1 -u \"$$MYSQL_USER\" -D \"$$MYSQL_DATABASE\" -e 'SELECT 1 FROM marcas LIMIT 1' >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 30s
     networks:
       - todobarato-net
   backend:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: DockerFile
     container_name: mi-app-todobarato
     restart: on-failure
     depends_on:
-      - mysql-db
+      mysql-db:
+        condition: service_healthy
     ports:
       - "8081:8080"
     environment:
       DB_HOST: mysql-db
       DB_PORT: 3306
       DB_NAME: todobarato
-      DB_USER: root
-      DB_PASSWORD: root
-      JPA_DDL_AUTO: update
+      DB_USER: ${DB_USER:-todobarato_app}
+      DB_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en .env}
+      JPA_DDL_AUTO: validate
     networks:
       - todobarato-net
 volumes:
